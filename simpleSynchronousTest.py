@@ -59,6 +59,8 @@ if clientID!=-1:
     motorFrontRight=vrep.simxGetObjectHandle(clientID,"driving_joint_front_left",vrep.simx_opmode_blocking)
     motorRearLeft=vrep.simxGetObjectHandle(clientID,"driving_joint_rear_right",vrep.simx_opmode_blocking)
     motorRearRight=vrep.simxGetObjectHandle(clientID,"driving_joint_rear_left",vrep.simx_opmode_blocking)
+    steeringWheelLeft=vrep.simxGetObjectHandle(clientID,"steering_joint_fl",vrep.simx_opmode_blocking)
+    steeringWheelRight=vrep.simxGetObjectHandle(clientID,"steering_joint_fr",vrep.simx_opmode_blocking)
     sensor_handle=vrep.simxGetObjectHandle(clientID,"Vision_sensor",vrep.simx_opmode_blocking)[1]
     
     vrep.simxStartSimulation(clientID,vrep.simx_opmode_blocking)
@@ -79,6 +81,8 @@ if clientID!=-1:
         vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-100,vrep.simx_opmode_blocking)
         vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-100,vrep.simx_opmode_blocking)
         vrep.simxSetJointTargetVelocity(clientID,motorRearRight[1],-100,vrep.simx_opmode_blocking)
+        vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],-1,vrep.simx_opmode_blocking)
+        vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],-1,vrep.simx_opmode_blocking)
 
     # stop the simulation:
     vrep.simxStopSimulation(clientID,vrep.simx_opmode_blocking)
