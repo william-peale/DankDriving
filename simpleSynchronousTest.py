@@ -59,16 +59,22 @@ if clientID!=-1:
     motorFrontRight=vrep.simxGetObjectHandle(clientID,"driving_joint_front_left",vrep.simx_opmode_blocking)
     motorRearLeft=vrep.simxGetObjectHandle(clientID,"driving_joint_rear_right",vrep.simx_opmode_blocking)
     motorRearRight=vrep.simxGetObjectHandle(clientID,"driving_joint_rear_left",vrep.simx_opmode_blocking)
+    sensor_handle=vrep.simxGetObjectHandle(clientID,"Vision_sensor",vrep.simx_opmode_blocking)[1]
     
     vrep.simxStartSimulation(clientID,vrep.simx_opmode_blocking)
 
     # Now step a few times:
+    _, _, buf = vrep.simxGetVisionSensorDepthBuffer(clientID, sensor_handle, vrep.simx_opmode_streaming)
+    print (buf)
     for i in range(1,25):
         if sys.version_info[0] == 3:
             input('Press <enter> key to step the simulation!')
         else:
             raw_input('Press <enter> key to step the simulation!')
         vrep.simxSynchronousTrigger(clientID);
+
+        _, _, buf = vrep.simxGetVisionSensorDepthBuffer(clientID, sensor_handle, vrep.simx_opmode_buffer)
+        print (buf)
         vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-100,vrep.simx_opmode_blocking)
         vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-100,vrep.simx_opmode_blocking)
         vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-100,vrep.simx_opmode_blocking)
