@@ -66,6 +66,13 @@ if clientID!=-1:
     visionSensor=vrep.simxGetObjectHandle(clientID,"Vision_sensor",vrep.simx_opmode_blocking)[1]
 
     proximitySensor=vrep.simxGetObjectHandle(clientID,"Proximity_sensor",vrep.simx_opmode_blocking)[1]
+    proximitySensor0=vrep.simxGetObjectHandle(clientID,"Proximity_sensor0",vrep.simx_opmode_blocking)[1]
+    proximitySensor1=vrep.simxGetObjectHandle(clientID,"Proximity_sensor1",vrep.simx_opmode_blocking)[1]
+    proximitySensor2=vrep.simxGetObjectHandle(clientID,"Proximity_sensor2",vrep.simx_opmode_blocking)[1]
+    proximitySensor3=vrep.simxGetObjectHandle(clientID,"Proximity_sensor3",vrep.simx_opmode_blocking)[1]
+    proximitySensor4=vrep.simxGetObjectHandle(clientID,"Proximity_sensor4",vrep.simx_opmode_blocking)[1]
+    proximitySensor5=vrep.simxGetObjectHandle(clientID,"Proximity_sensor5",vrep.simx_opmode_blocking)[1]
+    proximitySensor6=vrep.simxGetObjectHandle(clientID,"Proximity_sensor6",vrep.simx_opmode_blocking)[1]
 
     
     
@@ -74,8 +81,15 @@ if clientID!=-1:
     # Now step a few times:
     _, _, buf = vrep.simxGetVisionSensorDepthBuffer(clientID, visionSensor, vrep.simx_opmode_streaming)
     _, detectionState, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor, vrep.simx_opmode_streaming)
+    _, detectionState0, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor0, vrep.simx_opmode_streaming)
+    _, detectionState1, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor1, vrep.simx_opmode_streaming)
+    _, detectionState2, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor2, vrep.simx_opmode_streaming)
+    _, detectionState3, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor3, vrep.simx_opmode_streaming)
+    _, detectionState4, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor4, vrep.simx_opmode_streaming)
+    _, detectionState5, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor5, vrep.simx_opmode_streaming)
+    _, detectionState6, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor6, vrep.simx_opmode_streaming)
     _, collisionState=vrep.simxReadCollision(clientID,robotCollision[1],vrep.simx_opmode_streaming)
-    print (buf)
+    #print (buf)
     for i in range(1,250):
         if sys.version_info[0] == 3:
             input('Press <enter> key to step the simulation!')
@@ -85,10 +99,17 @@ if clientID!=-1:
 
         _, _, buf = vrep.simxGetVisionSensorDepthBuffer(clientID, visionSensor, vrep.simx_opmode_buffer)
         _, detectionState, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor, vrep.simx_opmode_buffer)
+        _, detectionState0, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor0, vrep.simx_opmode_buffer)
+        _, detectionState1, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor1, vrep.simx_opmode_buffer)
+        _, detectionState2, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor2, vrep.simx_opmode_buffer)
+        _, detectionState3, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor3, vrep.simx_opmode_buffer)
+        _, detectionState4, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor4, vrep.simx_opmode_buffer)
+        _, detectionState5, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor5, vrep.simx_opmode_buffer)
+        _, detectionState6, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor6, vrep.simx_opmode_buffer)
 
         _, collisionState=vrep.simxReadCollision(clientID,robotCollision[1],vrep.simx_opmode_buffer)
-        print (collisionState)
-        print (buf)
+        print ([detectionState,detectionState0,detectionState1,detectionState2,detectionState3,detectionState4,detectionState5,detectionState6])
+        #print (buf)
         vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-10,vrep.simx_opmode_blocking)
         vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-10,vrep.simx_opmode_blocking)
         vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-10,vrep.simx_opmode_blocking)
