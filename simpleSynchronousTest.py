@@ -54,7 +54,9 @@ if clientID!=-1:
     vrep.simxSynchronous(clientID,True)
 
     # start the simulation:
-
+    #robot=vrep.simxGetObjectHandle(clientID,"base_link",vrep.simx_opmode_blocking)
+    robotCollision=vrep.simxGetCollisionHandle(clientID,"swag3",vrep.simx_opmode_blocking)
+    print robotCollision
     motorFrontLeft=vrep.simxGetObjectHandle(clientID,"driving_joint_front_right",vrep.simx_opmode_blocking)
     motorFrontRight=vrep.simxGetObjectHandle(clientID,"driving_joint_front_left",vrep.simx_opmode_blocking)
     motorRearLeft=vrep.simxGetObjectHandle(clientID,"driving_joint_rear_right",vrep.simx_opmode_blocking)
@@ -64,15 +66,17 @@ if clientID!=-1:
     visionSensor=vrep.simxGetObjectHandle(clientID,"Vision_sensor",vrep.simx_opmode_blocking)[1]
 
     proximitySensor=vrep.simxGetObjectHandle(clientID,"Proximity_sensor",vrep.simx_opmode_blocking)[1]
+
+    
     
     vrep.simxStartSimulation(clientID,vrep.simx_opmode_blocking)
 
     # Now step a few times:
     _, _, buf = vrep.simxGetVisionSensorDepthBuffer(clientID, visionSensor, vrep.simx_opmode_streaming)
     _, detectionState, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor, vrep.simx_opmode_streaming)
-    
+    _, collisionState=vrep.simxReadCollision(clientID,robotCollision[1],vrep.simx_opmode_streaming)
     print (buf)
-    for i in range(1,25):
+    for i in range(1,250):
         if sys.version_info[0] == 3:
             input('Press <enter> key to step the simulation!')
         else:
@@ -81,14 +85,16 @@ if clientID!=-1:
 
         _, _, buf = vrep.simxGetVisionSensorDepthBuffer(clientID, visionSensor, vrep.simx_opmode_buffer)
         _, detectionState, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor, vrep.simx_opmode_buffer)
-        print (detectionState)
+
+        _, collisionState=vrep.simxReadCollision(clientID,robotCollision[1],vrep.simx_opmode_buffer)
+        print (collisionState)
         print (buf)
         vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-10,vrep.simx_opmode_blocking)
         vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-10,vrep.simx_opmode_blocking)
         vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-10,vrep.simx_opmode_blocking)
         vrep.simxSetJointTargetVelocity(clientID,motorRearRight[1],-10,vrep.simx_opmode_blocking)
-        vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],-0.5,vrep.simx_opmode_blocking)
-        vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],-0.5,vrep.simx_opmode_blocking)
+        vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],-0.0,vrep.simx_opmode_blocking)
+        vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],-0.0,vrep.simx_opmode_blocking)
 
     # stop the simulation:
     vrep.simxStopSimulation(clientID,vrep.simx_opmode_blocking)
