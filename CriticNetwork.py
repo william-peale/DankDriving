@@ -25,8 +25,8 @@ class CriticNetwork(object):
         K.set_session(sess)
 
         #Now create the model
-        self.model, self.action, self.state = self.create_critic_network(80,16,3)  
-        self.target_model, self.target_action, self.target_state = self.create_critic_network(80,16,3)  
+        self.model, self.action, self.state = self.create_critic_network(80,32,3)  
+        self.target_model, self.target_action, self.target_state = self.create_critic_network(80,32,3)  
         self.action_grads = tf.gradients(self.model.output, self.action)  #GRADIENTS for policy update
         self.sess.run(tf.initialize_all_variables())
 
@@ -49,31 +49,31 @@ class CriticNetwork(object):
 
         #ACTION MODEL
 
-        action_dim = 2
+        action_dim = 1
         
-        S0 = Input(shape=(num_images,img_size,img_size))
-        c0 = Convolution2D(64, 5, 5, border_mode='same', activation='relu')(S0)
-        c1 = Convolution2D(32, 5, 5, border_mode='same', activation='relu')(c0)
-        p0 = MaxPooling2D(pool_size=(2,2))(c1)
-        f0 = Flatten()(p0)
-        h2 = Dense(HIDDEN2_UNITS, activation='linear')(f0)
+        #S0 = Input(shape=(num_images,img_size,img_size))
+        #c0 = Convolution2D(64, 5, 5, border_mode='same', activation='relu')(S0)
+        #c1 = Convolution2D(32, 5, 5, border_mode='same', activation='relu')(c0)
+        #p0 = MaxPooling2D(pool_size=(2,2))(c1)
+        #f0 = Flatten()(p0)
+        #h2 = Dense(HIDDEN2_UNITS, activation='linear')(f0)
         
         #Lidar Input
         S1 = Input(shape=[lidar_inputs])
         h0 = Dense(HIDDEN1_UNITS, activation='relu')(S1)
         h1 = Dense(HIDDEN2_UNITS, activation='linear')(h0)
         
-        m0 = merge([h1,h2], mode='sum')
-        h3 = Dense(HIDDEN3_UNITS, activation='relu')(m0)
+        #m0 = merge([h1,h2], mode='sum')
+        #h3 = Dense(HIDDEN3_UNITS, activation='relu')(m0)
 
         #STATE MODEL
           
         A = Input(shape=[action_dim],name='action2')   
         a1 = Dense(HIDDEN2_UNITS, activation='linear')(A) 
-        h4 = merge([h3,a1],mode='sum')    
-        h5 = Dense(HIDDEN2_UNITS, activation='relu')(h2)
-        V = Dense(action_dim,activation='linear')(h3)   
-        model = Model(input=[S0,S1,A],output=V)
+        h4 = merge([h1,a1],mode='sum')    
+        h5 = Dense(HIDDEN2_UNITS, activation='relu')(h4)
+        V = Dense(action_dim,activation='linear')(h5)   
+        model = Model(input=[S1,A],output=V)
         adam = Adam(lr=self.LEARNING_RATE)
         model.compile(loss='mse', optimizer=adam)
-        return model, A, [S0,S1] 
+        return model, A, [S1] 

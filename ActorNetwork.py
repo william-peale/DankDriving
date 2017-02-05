@@ -23,8 +23,8 @@ class ActorNetwork(object):
         K.set_session(sess)
 
         #Now create the model
-        self.model , self.weights, self.state = self.create_actor_network(80,16,3)   
-        self.target_model, self.target_weights, self.target_state = self.create_actor_network(80,16,3) 
+        self.model , self.weights, self.state = self.create_actor_network(80,32,3)   
+        self.target_model, self.target_weights, self.target_state = self.create_actor_network(80,32,3) 
         self.action_gradient = tf.placeholder(tf.float32,[None, action_size])
         self.params_grad = tf.gradients(self.model.output, self.weights, -self.action_gradient)
         grads = zip(self.params_grad, self.weights)
@@ -48,25 +48,26 @@ class ActorNetwork(object):
         print("Now we build the model")
 
         #Input image
-        S0 = Input(shape=(num_images,img_size,img_size))
-        c0 = Convolution2D(64, 5, 5, border_mode='same', activation='relu')(S0)
-        c1 = Convolution2D(32, 5, 5, border_mode='same', activation='relu')(c0)
-        p0 = MaxPooling2D(pool_size=(2,2))(c1)
-        f0 = Flatten()(p0)
-        h2 = Dense(HIDDEN2_UNITS, activation='linear')(f0)
+        #S0 = Input(shape=(num_images,img_size,img_size))
+        #c0 = Convolution2D(64, 5, 5, border_mode='same', activation='relu')(S0)
+        #c1 = Convolution2D(32, 5, 5, border_mode='same', activation='relu')(c0)
+        #p0 = MaxPooling2D(pool_size=(2,2))(c1)
+        #f0 = Flatten()(p0)
+        #h2 = Dense(HIDDEN2_UNITS, activation='linear')(f0)
         
         #Lidar Input
         S1 = Input(shape=[lidar_inputs])
         h0 = Dense(HIDDEN1_UNITS, activation='relu')(S1)
         h1 = Dense(HIDDEN2_UNITS, activation='linear')(h0)
         
-        m0 = merge([h1,h2], mode='sum')
-        h3 = Dense(HIDDEN3_UNITS, activation='relu')(m0)
+        #m0 = merge([h1,h2], mode='sum')
+        #h3 = Dense(HIDDEN3_UNITS, activation='relu')(m0)
                    
-        Output1 = Dense(1,activation='sigmoid')(h3)
-        Output2 = Dense(1,activation='tanh')(h3)
-        V = merge([Output1,Output2],mode='concat')
+        #Output1 = Dense(1,activation='sigmoid')(h1)
+        #Output2 = Dense(1,activation='tanh')(h1)
+        #V = merge([Output1,Output2],mode='concat')
+        V = Dense(1,activation='tanh')(h1)
         
-        model = Model(input=[S0,S1],output=V)
-        return model, model.trainable_weights, [S0,S1]
+        model = Model(input=[S1],output=V)
+        return model, model.trainable_weights, [S1]
 

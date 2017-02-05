@@ -52,14 +52,14 @@ if clientID!=-1:
 
     # enable the synchronous mode on the client:
     vrep.simxSynchronous(clientID,True)
-
+    
     # start the simulation:
 
     motorFrontLeft=vrep.simxGetObjectHandle(clientID,"driving_joint_front_right",vrep.simx_opmode_blocking)
     motorFrontRight=vrep.simxGetObjectHandle(clientID,"driving_joint_front_left",vrep.simx_opmode_blocking)
     motorRearLeft=vrep.simxGetObjectHandle(clientID,"driving_joint_rear_right",vrep.simx_opmode_blocking)
     motorRearRight=vrep.simxGetObjectHandle(clientID,"driving_joint_rear_left",vrep.simx_opmode_blocking)
-    
+
     vrep.simxStartSimulation(clientID,vrep.simx_opmode_blocking)
 
     # Now step a few times:
