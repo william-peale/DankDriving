@@ -68,12 +68,12 @@ class CriticNetwork(object):
 
         #STATE MODEL
           
-        A = Input(shape=[action_dim],name='action2')   
+        A = Input(shape=[1],name='action2')   
         a1 = Dense(HIDDEN2_UNITS, activation='linear')(A) 
         h4 = merge([h1,a1],mode='sum')    
         h5 = Dense(HIDDEN2_UNITS, activation='relu')(h4)
-        V = Dense(action_dim,activation='linear')(h5)   
+        V = Dense(1,activation='linear')(h5)   
         model = Model(input=[S1,A],output=V)
         adam = Adam(lr=self.LEARNING_RATE)
         model.compile(loss='mse', optimizer=adam)
-        return model, A, [S1] 
+        return model, A, S1 

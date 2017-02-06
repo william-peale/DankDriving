@@ -69,5 +69,5 @@ class ActorNetwork(object):
         V = Dense(1,activation='tanh')(h1)
         
         model = Model(input=[S1],output=V)
-        return model, model.trainable_weights, [S1]
+        return model, model.trainable_weights, S1
 
