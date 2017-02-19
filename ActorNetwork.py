@@ -23,8 +23,8 @@ class ActorNetwork(object):
         K.set_session(sess)
 
         #Now create the model
-        self.model , self.weights, self.state = self.create_actor_network(80,16,3)   
-        self.target_model, self.target_weights, self.target_state = self.create_actor_network(80,16,3) 
+        self.model , self.weights, self.state = self.create_actor_network(80,90,3)   
+        self.target_model, self.target_weights, self.target_state = self.create_actor_network(80,90,3) 
         self.action_gradient = tf.placeholder(tf.float32,[None, action_size])
         self.params_grad = tf.gradients(self.model.output, self.weights, -self.action_gradient)
         grads = zip(self.params_grad, self.weights)

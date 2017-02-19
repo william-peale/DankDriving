@@ -35,7 +35,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     LRC = 0.001     #Lerning rate for Critic
 
     action_dim = 2  #Steering/Acceleration/Brake
-    state_dim = 16  #of sensors input
+    state_dim = 90  #of sensors input
 
     np.random.seed(1337)
 
@@ -107,6 +107,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
         print("Cannot find the weight")
 
     print("imma start drivin.")
+    max_avg_reward = -99999
     for i in range(episode_count):
 
         print("Episode : " + str(i) + " Replay Buffer " + str(buff.count()))
@@ -149,8 +150,9 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
 
             a_t_original = actor.model.predict(s_t.reshape((1,state_dim)))
 
-            noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.6, 0.30)
-            noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.6 , 1.0, 0.10)
+            noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.6 , 1.0, 0.10)
+            noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.0 , 0.60, 0.60)
+            
             #noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2], 0.0 , 0.15, 0.30)
             #noise_t[0][3] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][3], 0.0 , 0.15, 0.30)
 
@@ -162,18 +164,17 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             #ob, r_t, done, info = env.step(a_t[0]) kys openai old stuff
 
             #READ FROM VREP HERE MIGHT BE MESSY
-
             vrep.simxSynchronousTrigger(clientID); #IM TRIGGERED
 
             r_t = -.1
             done = False
 
-            vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-7*a_t[0][1]-1,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-7*a_t[0][1]-1,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-7*a_t[0][1]-1,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorRearRight[1],-7*a_t[0][1]-1,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],a_t[0][0],vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],a_t[0][0],vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-12.0*a_t[0][0]-1.5,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-12.0*a_t[0][0]-1.5,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-12.0*a_t[0][0]-1.5,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorRearRight[1],-12.0*a_t[0][0]-1.5,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],a_t[0][1],vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],a_t[0][1],vrep.simx_opmode_blocking)
             
             _, _, ob = vrep.simxGetVisionSensorDepthBuffer(clientID, sensor_handle, vrep.simx_opmode_buffer)
             _, proxArr[0], _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor1, vrep.simx_opmode_buffer)
@@ -239,18 +240,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             if done:
                 vrep.simxStopSimulation(clientID,vrep.simx_opmode_blocking)
                 break
-
-        if np.mod(i, 3) == 0:
-            if (train_indicator):
-                print("Now we save model")
-                actor.model.save_weights("actormodel.h5", overwrite=True)
-                with open("actormodel.json", "w") as outfile:
-                    json.dump(actor.model.to_json(), outfile)
-
-                critic.model.save_weights("criticmodel.h5", overwrite=True)
-                with open("criticmodel.json", "w") as outfile:
-                    json.dump(critic.model.to_json(), outfile)
-
+        r_sum = -9999
         reward_history.append(total_reward)
         if(len(reward_history) > 50):
             r_sum = 0
@@ -263,6 +253,32 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
         plt.plot(y1,reward_avg_history)
 	plt.savefig("graph.png")
 	plt.clf()
+        
+        
+
+        
+        if float(r_sum)/50.0 > max_avg_reward:
+            if (train_indicator):
+                print("New best model")
+                actor.model.save_weights("actormodel_best.h5", overwrite=True)
+                with open("actormodel_best.json", "w") as outfile:
+                    json.dump(actor.model.to_json(), outfile)
+
+                critic.model.save_weights("criticmodel_best.h5", overwrite=True)
+                with open("criticmodel_best.json", "w") as outfile:
+                    json.dump(critic.model.to_json(), outfile)
+            max_avg_reward = float(r_sum)/50.0
+        
+        if np.mod(i, 3) == 0:
+            if (train_indicator):
+                print("Now we save model")
+                actor.model.save_weights("actormodel.h5", overwrite=True)
+                with open("actormodel.json", "w") as outfile:
+                    json.dump(actor.model.to_json(), outfile)
+
+                critic.model.save_weights("criticmodel.h5", overwrite=True)
+                with open("criticmodel.json", "w") as outfile:
+                    json.dump(critic.model.to_json(), outfile)
         print("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward) + " Epsilon: " + str(epsilon))
         print("Total Step: " + str(step))
         print("")

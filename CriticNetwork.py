@@ -25,8 +25,8 @@ class CriticNetwork(object):
         K.set_session(sess)
 
         #Now create the model
-        self.model, self.action, self.state = self.create_critic_network(80,16,3)  
-        self.target_model, self.target_action, self.target_state = self.create_critic_network(80,16,3)  
+        self.model, self.action, self.state = self.create_critic_network(80,90,3)  
+        self.target_model, self.target_action, self.target_state = self.create_critic_network(80,90,3)  
         self.action_grads = tf.gradients(self.model.output, self.action)  #GRADIENTS for policy update
         self.sess.run(tf.initialize_all_variables())
 
