@@ -10,8 +10,8 @@ from keras.optimizers import Adam
 import keras.backend as K
 import tensorflow as tf
 
-HIDDEN1_UNITS = 128
-HIDDEN2_UNITS = 128
+HIDDEN1_UNITS = 512
+HIDDEN2_UNITS = 512
 HIDDEN3_UNITS = 128
 
 class CriticNetwork(object):
@@ -25,8 +25,8 @@ class CriticNetwork(object):
         K.set_session(sess)
 
         #Now create the model
-        self.model, self.action, self.state = self.create_critic_network(80,32,3)  
-        self.target_model, self.target_action, self.target_state = self.create_critic_network(80,32,3)  
+        self.model, self.action, self.state = self.create_critic_network(80,16,3)  
+        self.target_model, self.target_action, self.target_state = self.create_critic_network(80,16,3)  
         self.action_grads = tf.gradients(self.model.output, self.action)  #GRADIENTS for policy update
         self.sess.run(tf.initialize_all_variables())
 
@@ -68,7 +68,7 @@ class CriticNetwork(object):
 
         #STATE MODEL
           
-        A = Input(shape=[1],name='action2')   
+        A = Input(shape=[2],name='action2')   
         a1 = Dense(HIDDEN2_UNITS, activation='linear')(A) 
         h4 = merge([h1,a1],mode='sum')    
         h5 = Dense(HIDDEN2_UNITS, activation='relu')(h4)

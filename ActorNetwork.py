@@ -9,8 +9,8 @@ from keras.optimizers import Adam
 import tensorflow as tf
 import keras.backend as K
 
-HIDDEN1_UNITS = 128
-HIDDEN2_UNITS = 128
+HIDDEN1_UNITS = 512
+HIDDEN2_UNITS = 512
 HIDDEN3_UNITS = 128
 
 class ActorNetwork(object):
@@ -23,8 +23,8 @@ class ActorNetwork(object):
         K.set_session(sess)
 
         #Now create the model
-        self.model , self.weights, self.state = self.create_actor_network(80,32,3)   
-        self.target_model, self.target_weights, self.target_state = self.create_actor_network(80,32,3) 
+        self.model , self.weights, self.state = self.create_actor_network(80,16,3)   
+        self.target_model, self.target_weights, self.target_state = self.create_actor_network(80,16,3) 
         self.action_gradient = tf.placeholder(tf.float32,[None, action_size])
         self.params_grad = tf.gradients(self.model.output, self.weights, -self.action_gradient)
         grads = zip(self.params_grad, self.weights)
@@ -63,10 +63,10 @@ class ActorNetwork(object):
         #m0 = merge([h1,h2], mode='sum')
         #h3 = Dense(HIDDEN3_UNITS, activation='relu')(m0)
                    
-        #Output1 = Dense(1,activation='sigmoid')(h1)
-        #Output2 = Dense(1,activation='tanh')(h1)
-        #V = merge([Output1,Output2],mode='concat')
-        V = Dense(1,activation='tanh')(h1)
+        Output1 = Dense(1,activation='sigmoid')(h1)
+        Output2 = Dense(1,activation='tanh')(h1)
+        V = merge([Output1,Output2],mode='concat')
+        #V = Dense(1,activation='tanh')(h1)
         
         model = Model(input=[S1],output=V)
         return model, model.trainable_weights, S1
