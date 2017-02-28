@@ -30,18 +30,16 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     BUFFER_SIZE = 100000
     BATCH_SIZE = 32
     GAMMA = 0.995
-    TAU = 0.001     #Target Network HyperParameters
+    TAU = 0.001    #Target Network HyperParameters
     LRA = 0.0001    #Learning rate for Actor
     LRC = 0.001     #Lerning rate for Critic
 
     action_dim = 2  #Steering/Acceleration/Brake
     state_dim = 90  #of sensors input
-
-    np.random.seed(1337)
-
+    
     vision = False
 
-    EXPLORE = 250000.
+    EXPLORE = 100000.
     episode_count = 100000
     max_steps = 2000
     reward = 0
@@ -150,7 +148,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
 
             a_t_original = actor.model.predict(s_t.reshape((1,state_dim)))
 
-            noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.6 , 1.0, 0.10)
+            noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.25 , 1.0, 0.3)
             noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.0 , 0.60, 0.60)
             
             #noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2], 0.0 , 0.15, 0.30)
@@ -160,21 +158,24 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             a_t[0][1] = a_t_original[0][1] + noise_t[0][1]
             #a_t[0][2] = a_t_original[0][2] + noise_t[0][2]
             #a_t[0][3] = a_t_original[0][3] + noise_t[0][3]
-
+            if(a_t[0][1] > 1):
+                a_t[0][1] = 1
+            if(a_t[0][1] < -1):
+                a_t[0][1] = -1
             #ob, r_t, done, info = env.step(a_t[0]) kys openai old stuff
 
             #READ FROM VREP HERE MIGHT BE MESSY
             vrep.simxSynchronousTrigger(clientID); #IM TRIGGERED
 
-            r_t = -.1
+            r_t = -0.5
             done = False
 
-            vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-12.0*a_t[0][0]-1.5,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-12.0*a_t[0][0]-1.5,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-12.0*a_t[0][0]-1.5,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorRearRight[1],-12.0*a_t[0][0]-1.5,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],a_t[0][1],vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],a_t[0][1],vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-12.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-12.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-12.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorRearRight[1],-12.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],0.8*a_t[0][1],vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],0.8*a_t[0][1],vrep.simx_opmode_blocking)
             
             _, _, ob = vrep.simxGetVisionSensorDepthBuffer(clientID, sensor_handle, vrep.simx_opmode_buffer)
             _, proxArr[0], _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor1, vrep.simx_opmode_buffer)
@@ -193,7 +194,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             _, collided = vrep.simxReadCollision(clientID,robotCollision[1],vrep.simx_opmode_buffer)
             for i in range(len(proxArr)):
                 if proxArr[i] and not visited[i]:
-                    r_t += 9
+                    r_t += 25
                     visited[i] = True
                     
             if finished:
@@ -238,10 +239,13 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
         
             step += 1
             if done:
-                vrep.simxStopSimulation(clientID,vrep.simx_opmode_blocking)
                 break
+        vrep.simxStopSimulation(clientID,vrep.simx_opmode_blocking)
         r_sum = -9999
-        reward_history.append(total_reward)
+        if(total_reward > 500):
+            reward_history.append(250)
+        else:
+            reward_history.append(total_reward)
         if(len(reward_history) > 50):
             r_sum = 0
             for i_prime in range(len(reward_history)-50,len(reward_history)):
