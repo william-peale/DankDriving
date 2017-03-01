@@ -34,12 +34,13 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     LRA = 0.0001    #Learning rate for Actor
     LRC = 0.001     #Lerning rate for Critic
 
+    temporal_dim = 3
     action_dim = 2  #Steering/Acceleration/Brake
     state_dim = 90  #of sensors input
     
     vision = False
 
-    EXPLORE = 100000.
+    EXPLORE = 150000.
     episode_count = 100000
     max_steps = 2000
     reward = 0
@@ -128,7 +129,9 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
         _, _, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor12, vrep.simx_opmode_streaming)
         _, _, _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensorFinal, vrep.simx_opmode_streaming)
         _, _=vrep.simxReadCollision(clientID,robotCollision[1],vrep.simx_opmode_streaming)
-
+        vrep.simxSynchronousTrigger(clientID)
+        _, _, ob = vrep.simxGetVisionSensorDepthBuffer(clientID, sensor_handle, vrep.simx_opmode_buffer)
+        s_t_arr = [ob,ob,ob]
         visited = [False,False,False,False,False,False,False,False,False,False,False,False,False]
         total_reward = 0
         for j in range(max_steps):
@@ -136,17 +139,14 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             proxArr = [False,False,False,False,False,False,False,False,False,False,False,False,False]
             #Start up vrep
             
-            vrep.simxSynchronousTrigger(clientID);
-            
-            _, _, s_t = vrep.simxGetVisionSensorDepthBuffer(clientID, sensor_handle, vrep.simx_opmode_buffer)
-
-            s_t = np.array(s_t).reshape((1, state_dim))
+            vrep.simxSynchronousTrigger(clientID)
+            s_t = np.array(s_t_arr).reshape((1,temporal_dim,state_dim))
             loss = 0 
-            epsilon = max(.1, epsilon - (1.0 / EXPLORE))
+            epsilon = max(.15, epsilon - (1.0 / EXPLORE))
             a_t = np.zeros([1,2])
             noise_t = np.zeros([1,2])
 
-            a_t_original = actor.model.predict(s_t.reshape((1,state_dim)))
+            a_t_original = actor.model.predict(s_t)
 
             noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.25 , 1.0, 0.3)
             noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.0 , 0.60, 0.60)
@@ -165,7 +165,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             #ob, r_t, done, info = env.step(a_t[0]) kys openai old stuff
 
             #READ FROM VREP HERE MIGHT BE MESSY
-            vrep.simxSynchronousTrigger(clientID); #IM TRIGGERED
+            vrep.simxSynchronousTrigger(clientID) #IM TRIGGERED
 
             r_t = -0.5
             done = False
@@ -203,9 +203,10 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             if collided:
                 done = True
                 r_t += -50
-           
-
-            s_t1 = np.array(ob).reshape((1,state_dim))
+            s_t_arr.pop(0)
+            s_t_arr.append(ob)
+            
+            s_t1 = np.array(s_t_arr).reshape((1,temporal_dim,state_dim))
             buff.add(s_t, a_t, r_t, s_t1, done)      #Add replay buffer
             #Do the batch update
             batch = buff.getBatch(BATCH_SIZE)
