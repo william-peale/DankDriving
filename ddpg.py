@@ -27,7 +27,7 @@ OU = OU()       #Ornstein-Uhlenbeck Process
 
 def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
 
-    BUFFER_SIZE = 100000
+    BUFFER_SIZE = 1000000
     BATCH_SIZE = 32
     GAMMA = 0.995
     TAU = 0.001    #Target Network HyperParameters
@@ -40,7 +40,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     
     vision = False
 
-    EXPLORE = 150000.
+    EXPLORE = 50000.
     episode_count = 100000
     max_steps = 2000
     reward = 0
@@ -170,12 +170,12 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             r_t = -0.5
             done = False
 
-            vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-12.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-12.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-12.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorRearRight[1],-12.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],0.8*a_t[0][1],vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],0.8*a_t[0][1],vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorRearRight[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],a_t[0][1],vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],a_t[0][1],vrep.simx_opmode_blocking)
             
             _, _, ob = vrep.simxGetVisionSensorDepthBuffer(clientID, sensor_handle, vrep.simx_opmode_buffer)
             _, proxArr[0], _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor1, vrep.simx_opmode_buffer)
