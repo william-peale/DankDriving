@@ -4,15 +4,15 @@ from keras.initializations import normal, identity
 from keras.models import model_from_json
 from keras.models import Sequential, Model
 #from keras.engine.training import collect_trainable_weights
-from keras.layers import Dense, Flatten, Input, merge, Lambda, Convolution2D, MaxPooling2D, LSTM
+from keras.layers import Dense, Flatten, Input, merge, Lambda, Convolution1D, MaxPooling2D, LSTM
 from keras.optimizers import Adam
 import tensorflow as tf
 import keras.backend as K
 
-HIDDEN1_UNITS = 128
-HIDDEN2_UNITS = 128
-HIDDEN3_UNITS = 128
-LSTM_UNITS = 64
+HIDDEN1_UNITS = 512
+HIDDEN2_UNITS = 512
+HIDDEN3_UNITS = 512
+LSTM_UNITS = 128
 
 class ActorNetwork(object):
     def __init__(self, sess, state_size, action_size, BATCH_SIZE, TAU, LEARNING_RATE):
@@ -24,8 +24,8 @@ class ActorNetwork(object):
         K.set_session(sess)
 
         #Now create the model
-        self.model , self.weights, self.state = self.create_actor_network(80,90,3)   
-        self.target_model, self.target_weights, self.target_state = self.create_actor_network(80,90,3) 
+        self.model , self.weights, self.state = self.create_actor_network(80,450,10)   
+        self.target_model, self.target_weights, self.target_state = self.create_actor_network(80,450,10) 
         self.action_gradient = tf.placeholder(tf.float32,[None, action_size])
         self.params_grad = tf.gradients(self.model.output, self.weights, -self.action_gradient)
         grads = zip(self.params_grad, self.weights)
@@ -59,8 +59,8 @@ class ActorNetwork(object):
         #Lidar Input
         S1 = Input(shape=(num_images,lidar_inputs))
 
-        l0 = LSTM(LSTM_UNITS,activation='relu')(S1)
-        
+        c0 = Convolution1D(100, 5, border_mode='same',activation='relu')(S1)
+        l0 = LSTM(LSTM_UNITS,activation='relu')(c0) 
         h0 = Dense(HIDDEN1_UNITS, activation='relu')(l0)
         h1 = Dense(HIDDEN2_UNITS, activation='relu')(h0)
         

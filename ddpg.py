@@ -34,13 +34,13 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     LRA = 0.0001    #Learning rate for Actor
     LRC = 0.001     #Lerning rate for Critic
 
-    temporal_dim = 3
+    temporal_dim = 10
     action_dim = 2  #Steering/Acceleration/Brake
-    state_dim = 90  #of sensors input
+    state_dim = 450  #of sensors input
     
     vision = False
 
-    EXPLORE = 50000.
+    EXPLORE = 100000.
     episode_count = 100000
     max_steps = 2000
     reward = 0
@@ -131,7 +131,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
         _, _=vrep.simxReadCollision(clientID,robotCollision[1],vrep.simx_opmode_streaming)
         vrep.simxSynchronousTrigger(clientID)
         _, _, ob = vrep.simxGetVisionSensorDepthBuffer(clientID, sensor_handle, vrep.simx_opmode_buffer)
-        s_t_arr = [ob,ob,ob]
+        s_t_arr = [ob,ob,ob,ob,ob,ob,ob,ob,ob,ob]
         visited = [False,False,False,False,False,False,False,False,False,False,False,False,False]
         total_reward = 0
         for j in range(max_steps):
@@ -148,8 +148,8 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
 
             a_t_original = actor.model.predict(s_t)
 
-            noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.25 , 1.0, 0.3)
-            noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.0 , 0.60, 0.60)
+            noise_t[0][0] = train_indicator * max(epsilon, 0.15) * OU.function(a_t_original[0][0],  0.7 , 1.0, 0.3)
+            noise_t[0][1] = train_indicator * max(epsilon, 0.15) * OU.function(a_t_original[0][1],  0.0 , 0.60, 0.60)
             
             #noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2], 0.0 , 0.15, 0.30)
             #noise_t[0][3] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][3], 0.0 , 0.15, 0.30)
@@ -170,12 +170,12 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             r_t = -0.5
             done = False
 
-            vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetVelocity(clientID,motorRearRight[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],a_t[0][1],vrep.simx_opmode_blocking)
-            vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],a_t[0][1],vrep.simx_opmode_blocking)
+            vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_oneshot)
+            vrep.simxSetJointTargetVelocity(clientID,motorFrontRight[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_oneshot)
+            vrep.simxSetJointTargetVelocity(clientID,motorRearLeft[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_oneshot)
+            vrep.simxSetJointTargetVelocity(clientID,motorRearRight[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_oneshot)
+            vrep.simxSetJointTargetPosition(clientID,steeringWheelLeft[1],a_t[0][1],vrep.simx_opmode_oneshot)
+            vrep.simxSetJointTargetPosition(clientID,steeringWheelRight[1],a_t[0][1],vrep.simx_opmode_oneshot)
             
             _, _, ob = vrep.simxGetVisionSensorDepthBuffer(clientID, sensor_handle, vrep.simx_opmode_buffer)
             _, proxArr[0], _, _, _ = vrep.simxReadProximitySensor(clientID, proximitySensor1, vrep.simx_opmode_buffer)
