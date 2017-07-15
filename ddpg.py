@@ -32,9 +32,9 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     GAMMA = 0.995
     TAU = 0.001    #Target Network HyperParameters
     LRA = 0.0001    #Learning rate for Actor
-    LRC = 0.001     #Lerning rate for Critic
+    LRC = 0.002     #Lerning rate for Critic
 
-    temporal_dim = 10
+    temporal_dim = 3
     action_dim = 2  #Steering/Acceleration/Brake
     state_dim = 450  #of sensors input
     
@@ -97,10 +97,10 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     print("Now we load the weight")
     try:
         #UNCOMMENT THIS TO LOAD WEIGHTS
-        #actor.model.load_weights("actormodel.h5")
-        #critic.model.load_weights("criticmodel.h5")
-        #actor.target_model.load_weights("actormodel.h5")
-        #critic.target_model.load_weights("criticmodel.h5")
+        actor.model.load_weights("actormodel_best.h5")
+        critic.model.load_weights("criticmodel_best.h5")
+        actor.target_model.load_weights("actormodel_best.h5")
+        critic.target_model.load_weights("criticmodel_best.h5")
         print("Weight load successfully")
     except:
         print("Cannot find the weight")
@@ -131,7 +131,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
         _, _=vrep.simxReadCollision(clientID,robotCollision[1],vrep.simx_opmode_streaming)
         vrep.simxSynchronousTrigger(clientID)
         _, _, ob = vrep.simxGetVisionSensorDepthBuffer(clientID, sensor_handle, vrep.simx_opmode_buffer)
-        s_t_arr = [ob,ob,ob,ob,ob,ob,ob,ob,ob,ob]
+        s_t_arr = [ob,ob,ob]
         visited = [False,False,False,False,False,False,False,False,False,False,False,False,False]
         total_reward = 0
         for j in range(max_steps):
@@ -167,7 +167,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             #READ FROM VREP HERE MIGHT BE MESSY
             vrep.simxSynchronousTrigger(clientID) #IM TRIGGERED
 
-            r_t = -0.5
+            r_t = -1.0
             done = False
 
             vrep.simxSetJointTargetVelocity(clientID,motorFrontLeft[1],-25.0*a_t[0][0]-1.0,vrep.simx_opmode_oneshot)
@@ -291,4 +291,4 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     print("Finish.")
 
 if __name__ == "__main__":
-    playGame(1)
+    playGame(0)

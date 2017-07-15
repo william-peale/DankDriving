@@ -10,9 +10,9 @@ from keras.optimizers import Adam
 import keras.backend as K
 import tensorflow as tf
 
-HIDDEN1_UNITS = 512
-HIDDEN2_UNITS = 512
-HIDDEN3_UNITS = 512
+HIDDEN1_UNITS = 256
+HIDDEN2_UNITS = 256
+HIDDEN3_UNITS = 256
 LSTM_UNITS = 128
 class CriticNetwork(object):
     def __init__(self, sess, state_size, action_size, BATCH_SIZE, TAU, LEARNING_RATE):
@@ -25,8 +25,8 @@ class CriticNetwork(object):
         K.set_session(sess)
 
         #Now create the model
-        self.model, self.action, self.state = self.create_critic_network(80,450,10)  
-        self.target_model, self.target_action, self.target_state = self.create_critic_network(80,450,10)  
+        self.model, self.action, self.state = self.create_critic_network(80,450,3)  
+        self.target_model, self.target_action, self.target_state = self.create_critic_network(80,450,3)  
         self.action_grads = tf.gradients(self.model.output, self.action)  #GRADIENTS for policy update
         self.sess.run(tf.initialize_all_variables())
 
@@ -60,8 +60,7 @@ class CriticNetwork(object):
         
         #Lidar Input
         S1 = Input(shape=(num_images,lidar_inputs))
-        c0 = Convolution1D(100, 5, border_mode='same',activation='relu')(S1)
-        l0 = LSTM(LSTM_UNITS,activation='relu')(c0)
+        l0 = LSTM(LSTM_UNITS,activation='relu')(S1)
         h0 = Dense(HIDDEN1_UNITS, activation='relu')(l0)
         h1 = Dense(HIDDEN2_UNITS, activation='linear')(h0)
         
